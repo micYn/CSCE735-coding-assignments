@@ -4,6 +4,15 @@
     <meta charset="='utf-8">
     <title>Hong Kong Monthly Temperature</title>
     <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+    <style>
+        body { font-family: sans-serif; margin: 24px; }
+        button { padding: 6px 12px; margin-right: 6px; cursor: pointer; }
+        button.active { background: #333; color: white; }
+        #tooltip {
+        position: absolute; opacity: 0; pointer-events: none;
+        background: white; border: 1px solid #999; padding: 6px 8px; font-size: 13px;
+        }
+    </style>
 </head>
 <body>
     <h1>Hong Kong Monthly temperature</h1>
