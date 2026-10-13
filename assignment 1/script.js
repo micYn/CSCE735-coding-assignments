@@ -36,6 +36,7 @@ function monthlyCells() {
     data,
     // three kinds of date/info that I can show:
     days => ({
+      days: days,
       avg: d3.mean(days, d => d[metric]),
       hottest: d3.greatest(days, d => d.max),
       coldest: d3.least(days, d => d.min)
@@ -54,9 +55,9 @@ function monthlyCells() {
 function formatDate(d) {
   return `${d.year}-${String(d.month).padStart(2, "0")}-${String(d.day).padStart(2, "0")}`;
 }
-function drawLegend(color) {
+function drawLegend(color, legendX) {
   const [lo, hi] = color.domain();
-  const legendX = margin.left + 21 * cellSize + 30;
+  // const legendX = margin.left + 21 * cellSize + 30;
   const legendHeight = 200;
  
   const gradient = svg.append("defs").append("linearGradient")
@@ -83,25 +84,25 @@ function drawLegend(color) {
  
   // Line key
   const keyY = margin.top + legendHeight + 30;
-  svg.append("line").attr("x1", legendX).attr("x2", legendX + 25).attr("y1", keyY).attr("y2", keyY).attr("stroke", "black").attr("stroke-width", 1.2);
-  svg.append("text").attr("x", legendX + 30).attr("y", keyY + 4).attr("font-size", 12).text("Daily max");
-  svg.append("line").attr("x1", legendX).attr("x2", legendX + 25).attr("y1", keyY + 18).attr("y2", keyY + 18).attr("stroke", "black").attr("stroke-width", 1.2).attr("stroke-dasharray", "3,2");
-  svg.append("text").attr("x", legendX + 30).attr("y", keyY + 22).attr("font-size", 12).text("Daily min");
+  // svg.append("line").attr("x1", legendX).attr("x2", legendX + 25).attr("y1", keyY).attr("y2", keyY).attr("stroke", "black").attr("stroke-width", 1.2);
+  // svg.append("text").attr("x", legendX + 30).attr("y", keyY + 4).attr("font-size", 12).text("Daily max");
+  // svg.append("line").attr("x1", legendX).attr("x2", legendX + 25).attr("y1", keyY + 18).attr("y2", keyY + 18).attr("stroke", "black").attr("stroke-width", 1.2).attr("stroke-dasharray", "3,2");
+  // svg.append("text").attr("x", legendX + 30).attr("y", keyY + 22).attr("font-size", 12).text("Daily min");
 }
 function draw() {
   const cells = monthlyCells();
   const years = Array.from(new Set(cells.map(c => c.year))).sort();
   const months = d3.range(1, 13);
  
-  svg.attr("width", margin.left + years.length * cellSize + margin.right)
-     .attr("height", margin.top + months.length * cellSize + margin.bottom);
+  svg.attr("width", margin.left + years.length * cellWidth + margin.right)
+     .attr("height", margin.top + months.length * cellHeight + margin.bottom);
   svg.selectAll("*").remove();
  
-  const x = d3.scaleBand().domain(years).range([margin.left, margin.left + years.length * cellSize]);
-  const y = d3.scaleBand().domain(months).range([margin.top, margin.top + months.length * cellSize]);
+  const x = d3.scaleBand().domain(years).range([margin.left, margin.left + years.length * cellWidth]);
+  const y = d3.scaleBand().domain(months).range([margin.top, margin.top + months.length * cellHeight]);
  
-  const color = d3.scaleSequential(d3.interpolateYlOrRd)
-    .domain(d3.extent(cells, c => c.avg));
+  const color = d3.scaleSequential(d3.scaleSequential(t => d3.interpolateYlOrRd(0.05 + t * 0.6)))
+    .domain(d3.extent(cells, c => c.avg));  //now the background is lighter and the lines are more visible.
  
   // Inside a cell: day of month -> horizontal, temperature -> vertical.
   // Same vertical scale for every cell so cells can be compared.
