@@ -26,6 +26,7 @@ function setMetric(m) {
 function monthlyCells() {
   const groups = d3.rollup(
     data,
+    // three kinds of date/info that I can show:
     days => ({
       avg: d3.mean(days, d => d[metric]),
       hottest: d3.greatest(days, d => d.max),
@@ -42,26 +43,14 @@ function monthlyCells() {
   }
   return cells;
 }
-// function monthlyAverages() {
-//   const groups = d3.rollup(
-//     data,
-//     days => d3.mean(days, d => d[metric]),
-//     d => d.year,
-//     d => d.month
-//   );
-//   const cells = [];
-//   for (const [year, months] of groups) {
-//     for (const [month, avg] of months) {
-//       cells.push({ year, month, avg });
-//     }
-//   }
-//   return cells;
-// }
+function formatDate(d) {
+  return `${d.year}-${String(d.month).padStart(2, "0")}-${String(d.day).padStart(2, "0")}`;
+}
 function drawLegend(color) {
   const [lo, hi] = color.domain();
   const legendX = margin.left + 21 * cellSize + 30;
   const legendHeight = 200;
-
+ 
   const gradient = svg.append("defs").append("linearGradient")
     .attr("id", "legend-gradient")
     .attr("x1", 0).attr("y1", 1).attr("x2", 0).attr("y2", 0);
@@ -70,19 +59,16 @@ function drawLegend(color) {
       .attr("offset", t)
       .attr("stop-color", color(lo + t * (hi - lo)));
   });
-
+ 
   svg.append("rect")
     .attr("x", legendX).attr("y", margin.top)
     .attr("width", 15).attr("height", legendHeight)
     .attr("fill", "url(#legend-gradient)");
-
+ 
   const scale = d3.scaleLinear().domain([lo, hi]).range([margin.top + legendHeight, margin.top]);
   svg.append("g")
     .attr("transform", `translate(${legendX + 15},0)`)
     .call(d3.axisRight(scale).ticks(5));
-}
-function formatDate(d) {
-  return `${d.year}-${String(d.month).padStart(2, "0")}-${String(d.day).padStart(2, "0")}`;
 }
 function draw() {
   const cells = monthlyCells();
@@ -117,9 +103,10 @@ function draw() {
         //   `Lowest min: ${c.coldest.min} °C (${formatDate(c.coldest)})`
         // );
         .html(
-          metric === "max"
-            ? `Highest max: ${c.hottest.max} °C (${formatDate(c.hottest)})`
-            : `Lowest min: ${c.coldest.min} °C (${formatDate(c.coldest)})`
+          `${c.year}-${String(c.month).padStart(2, "0")}<br>` +
+          (metric === "max"
+            ? `Highest temperature of the month: ${c.hottest.max} °C (on ${formatDate(c.hottest)})`
+            : `Lowest temperature of the month: ${c.coldest.min} °C (on ${formatDate(c.coldest)})`)
         );
     })
     .on("mouseleave", () => tooltip.style("opacity", 0));
@@ -133,29 +120,4 @@ function draw() {
     .call(d3.axisLeft(y).tickFormat(m => d3.timeFormat("%b")(new Date(2000, m - 1))));
  
   drawLegend(color);
-}
- 
-function drawLegend(color) {
-  const [lo, hi] = color.domain();
-  const legendX = margin.left + 21 * cellSize + 30;
-  const legendHeight = 200;
- 
-  const gradient = svg.append("defs").append("linearGradient")
-    .attr("id", "legend-gradient")
-    .attr("x1", 0).attr("y1", 1).attr("x2", 0).attr("y2", 0);
-  d3.range(0, 1.01, 0.1).forEach(t => {
-    gradient.append("stop")
-      .attr("offset", t)
-      .attr("stop-color", color(lo + t * (hi - lo)));
-  });
- 
-  svg.append("rect")
-    .attr("x", legendX).attr("y", margin.top)
-    .attr("width", 15).attr("height", legendHeight)
-    .attr("fill", "url(#legend-gradient)");
- 
-  const scale = d3.scaleLinear().domain([lo, hi]).range([margin.top + legendHeight, margin.top]);
-  svg.append("g")
-    .attr("transform", `translate(${legendX + 15},0)`)
-    .call(d3.axisRight(scale).ticks(5));
 }
