@@ -81,7 +81,9 @@ function drawLegend(color) {
     .attr("transform", `translate(${legendX + 15},0)`)
     .call(d3.axisRight(scale).ticks(5));
 }
-
+function formatDate(d) {
+  return `${d.year}-${String(d.month).padStart(2, "0")}-${String(d.day).padStart(2, "0")}`;
+}
 function draw() {
   const cells = monthlyCells();
   const years = Array.from(new Set(cells.map(c => c.year))).sort();
@@ -110,9 +112,14 @@ function draw() {
         .style("opacity", 1)
         .style("left", event.pageX + 12 + "px")
         .style("top", event.pageY + 12 + "px")
+        // .html(
+        //   `Highest max: ${c.hottest.max} °C (${formatDate(c.hottest)})<br>` +
+        //   `Lowest min: ${c.coldest.min} °C (${formatDate(c.coldest)})`
+        // );
         .html(
-          `Highest max: ${c.hottest.max} °C (${formatDate(c.hottest)})<br>` +
-          `Lowest min: ${c.coldest.min} °C (${formatDate(c.coldest)})`
+          metric === "max"
+            ? `Highest max: ${c.hottest.max} °C (${formatDate(c.hottest)})`
+            : `Lowest min: ${c.coldest.min} °C (${formatDate(c.coldest)})`
         );
     })
     .on("mouseleave", () => tooltip.style("opacity", 0));
