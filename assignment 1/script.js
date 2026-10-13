@@ -1,5 +1,5 @@
 const margin = { top: 40, right: 100, bottom: 20, left: 50};
-const cellsize = 40;
+const cellSize = 40;
 
 const svg = d3.select("#chart");
 const tooltip = d3.select("#tooltip");
