@@ -7,14 +7,38 @@ const tooltip = d3.select("#tooltip");
 let data = [];
 let metric = "max";
 
-d3.csv("temperture_daily.csv").then(rows => {
+d3.csv("temperature_daily.csv").then(rows => {
   data = rows.map(r => {
     const [year, month, day] = r.date.split("-").map(Number);
     return { year, month, day, max: +r.max_temperature, min: +r.min_temperature };
   });
   draw();
 });
+d3.select("#btn-max").on("click", () => setMetric("max"));
+d3.select("#btn-min").on("click", () => setMetric("min"));
 
+function setMetric(m) {
+  metric = m;
+  d3.select("#btn-max").classed("active", m === "max");
+  d3.select("#btn-min").classed("active", m === "min");
+  draw();
+}
+
+function monthlyAverages() {
+  const groups = d3.rollup(
+    data,
+    days => d3.mean(days, d => d[metric]),
+    d => d.year,
+    d => d.month
+  );
+  const cells = [];
+  for (const [year, months] of groups) {
+    for (const [month, avg] of months) {
+      cells.push({ year, month, avg });
+    }
+  }
+  return cells;
+}
 function drawLegend(color) {
   const [lo, hi] = color.domain();
   const legendX = margin.left + 21 * cellSize + 30;
@@ -41,7 +65,7 @@ function drawLegend(color) {
 }
 
 function draw() {
-//   const cells = monthlyAverages();
+  const cells = monthlyAverages();
   const years = Array.from(new Set(cells.map(c => c.year))).sort();
   const months = d3.range(1, 13);
 
